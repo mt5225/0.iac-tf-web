@@ -1,7 +1,5 @@
-resource "random_password" "password" { #A
-  length           = 16
-  special          = true
-  override_special = "_%@/'\""
+data "aws_ssm_parameter" "dbpass" {
+  name = "/cloudj/cloudiac/tf-web/db/password"
 }
 
 resource "aws_db_instance" "database" {
@@ -12,8 +10,8 @@ resource "aws_db_instance" "database" {
   identifier             = "${var.namespace}-db-instance"
   name                   = "pets"
   username               = "admin"
-  password               = random_password.password.result
+  password               = data.aws_ssm_parameter.dbpass.value
   db_subnet_group_name   = var.vpc.database_subnet_group #B
-  vpc_security_group_ids = [var.sg.db] #B
+  vpc_security_group_ids = [var.sg.db]                   #B
   skip_final_snapshot    = true
 }
